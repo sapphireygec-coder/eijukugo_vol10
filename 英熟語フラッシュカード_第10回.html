@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>英熟語フラッシュカード 第10回</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;600;700&family=Zen+Maru+Gothic:wght@500;700&display=swap');
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: 'Zen Maru Gothic', 'Noto Serif JP', serif;
+  background: #0A1526;
+  color: #F2EFE7;
+}
+body { min-height: 100vh; }
+
+#pbar { position: sticky; top: 0; height: 4px; background: #16233B; z-index: 50; }
+#pfill { height: 100%; width: 0%; background: linear-gradient(90deg,#FFD400,#FF8C1A); transition: width .3s; }
+
+#hdr {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px;
+  padding: 16px 20px;
+  background: #0E1B32; color: #F2EFE7;
+  border-bottom: 1px solid #1C2C4A;
+}
+.hl { display: flex; align-items: center; gap: 10px; }
+.badge {
+  background: #FFD400; color: #0E1B32; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px; font-size: 15px;
+  letter-spacing: .03em;
+}
+.htitle { font-size: 18px; font-weight: 700; color: #F8F6EF; }
+.scbox { display: flex; gap: 16px; font-size: 16px; align-items: center; }
+.sc-ok { color: #C7EA46; font-weight: 700; font-size: 18px; }
+.sc-ng { color: #FF6F61; font-weight: 700; font-size: 18px; }
+.sc-lbl { color: #9CB0D0; }
+.sc-pos { color: #F2EFE7; font-weight: 600; font-size: 15px; background: #16233B; padding: 4px 12px; border-radius: 14px; }
+
+#main { max-width: 760px; margin: 0 auto; padding: 26px 16px 60px; }
+
+/* ===== flip card ===== */
+.scene { perspective: 1600px; }
+.card3d {
+  position: relative; width: 100%; min-height: 460px;
+  transform-style: preserve-3d; transition: transform .6s cubic-bezier(.4,.2,.2,1);
+}
+.card3d.flipped { transform: rotateY(180deg); }
+.face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: 18px; padding: 28px 26px;
+  box-shadow: 0 8px 32px rgba(0,10,30,.55);
+  display: flex; flex-direction: column;
+}
+.face-front { background: #122140; border: 1.5px solid #234070; }
+.face-back  { background: #122140; border: 1.5px solid #234070; transform: rotateY(180deg); }
+
+.qmeta { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 10px; }
+.qtype-badge {
+  font-size: 14px; font-weight: 700; padding: 5px 14px; border-radius: 14px; color: #0E1B32;
+}
+.type-A { background: #4FA8FF; }  /* サファイアブルー */
+.type-B { background: #FF9A2E; }  /* オレンジ */
+.type-C { background: #F5E64C; }  /* レモン */
+.type-D { background: #FFD400; }  /* イエロー */
+.qnum { font-size: 14px; color: #9CB0D0; font-weight: 600; }
+
+.timer-ring-wrap { position: relative; width: 76px; height: 76px; flex-shrink: 0; }
+.timer-ring-wrap svg { width: 76px; height: 76px; transform: rotate(-90deg); display: block; }
+.timer-ring-bg { fill: none; stroke: #1C2C4A; stroke-width: 6; }
+.timer-ring-fg { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke .3s; }
+.timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; color: #F8F6EF; }
+.timer-ring-wrap.low .timer-num { color: #FF6F61; }
+.timer-caption { font-size: 11px; color: #7E93BC; text-align: center; margin-top: 3px; }
+
+.sentence { font-family: 'Noto Serif JP', serif; font-size: 19px; line-height: 1.9; color: #F0EDE3; margin-bottom: 18px; flex-grow: 0; }
+.blank-input { font-size: 17px; border-bottom: 2px solid #F5E64C; padding: 2px 10px; color: #F5E64C; font-weight: 700; }
+input.blank-fill {
+  font-family: 'Noto Serif JP', serif; font-size: 18px;
+  border: 1px solid #26407A; border-bottom: 2px solid #FF9A2E; background: #16233B;
+  padding: 4px 12px; margin: 0 4px; min-width: 140px; text-align: center;
+  color: #F8F6EF; outline: none; border-radius: 4px;
+}
+.hintbox {
+  background: #16233B; border-left: 3px solid #FF9A2E; border-radius: 8px;
+  padding: 12px 14px; font-size: 15.5px; color: #D8E0F0; margin-bottom: 16px; line-height: 1.8;
+}
+.hintbox b { color: #F8F6EF; }
+
+.audio-btn {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  background: #16233B; color: #F8F6EF; border: 1px solid #26407A; border-radius: 20px;
+  padding: 9px 20px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 16px;
+}
+.audio-btn:hover { background: #1C2C4A; }
+
+.dict-textarea {
+  width: 100%; font-family: 'Noto Serif JP', serif; font-size: 18px; line-height: 1.8;
+  border: 1px solid #26407A; border-bottom: 2px solid #F5E64C; background: #16233B;
+  padding: 12px 14px; color: #F8F6EF; outline: none; border-radius: 8px; resize: vertical; min-height: 60px;
+}
+
+.choices { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.choice-btn {
+  font-family: 'Noto Serif JP', serif; text-align: left; font-size: 17px;
+  padding: 13px 16px; border: 1.5px solid #26407A; border-radius: 10px;
+  background: #16233B; cursor: pointer; transition: all .15s; color: #F0EDE3;
+}
+.choice-btn:hover:not(:disabled) { border-color: #4FA8FF; background: #1C2E52; }
+.choice-btn.selected { border-color: #4FA8FF; background: #1E3A63; font-weight: 700; }
+.choice-btn:disabled { cursor: default; }
+
+.eu { display: inline; padding: 1px 4px; border-bottom: 2px solid #3E5A8C; cursor: pointer; border-radius: 3px; }
+.eu.selected { background: #1C2C4A; border-bottom-color: #FFD400; font-weight: 700; }
+.eu-tag { font-size: 11px; font-weight: 700; color: #9CB0D0; vertical-align: super; margin-right: 1px; }
+.err-fix-row { display: flex; gap: 8px; align-items: center; margin-top: 16px; }
+.err-fix-row input {
+  flex: 1; font-family: 'Noto Serif JP', serif; font-size: 17px;
+  border: 1px solid #26407A; border-bottom: 2px solid #FFD400; background: #16233B;
+  padding: 9px 12px; color: #F8F6EF; outline: none; border-radius: 6px;
+}
+
+.spacer { flex-grow: 1; }
+.actions { display: flex; gap: 12px; margin-top: 18px; }
+.btn { font-weight: 700; font-size: 16px; padding: 13px 28px; border-radius: 24px; border: none; cursor: pointer; }
+.btn-submit { background: #FFD400; color: #0E1B32; }
+.btn-submit:hover { background: #FFE45C; }
+.btn-submit:disabled { background: #26407A; color: #7E93BC; }
+.btn-flip { background: #4FA8FF; color: #0A1526; }
+.btn-next { background: #F8F6EF; color: #0E1B32; }
+.btn-next:hover { background: #FFFFFF; }
+
+/* back face */
+.result-tag { display: inline-block; font-weight: 700; font-size: 16px; padding: 5px 16px; border-radius: 20px; margin-bottom: 16px; }
+.result-tag.ok { background: #C7EA46; color: #14200A; }
+.result-tag.ng { background: #FF6F61; color: #250A06; }
+.answer-line { font-family: 'Noto Serif JP', serif; font-size: 21px; font-weight: 700; color: #FFD400; margin-bottom: 8px; line-height: 1.7; }
+.full-sentence { font-family: 'Noto Serif JP', serif; font-size: 17px; color: #C7D2E8; margin-bottom: 16px; line-height: 1.8; }
+.explain-box { background: #16233B; border-left: 3px solid #4FA8FF; border-radius: 9px; padding: 14px 16px; font-size: 16px; color: #D8E0F0; line-height: 1.9; margin-bottom: 6px; }
+.explain-box b { color: #F8F6EF; }
+
+.result-wrap { text-align: center; padding: 50px 20px; }
+.result-score { font-size: 66px; font-weight: 700; color: #FFD400; font-family: 'Noto Serif JP', serif; }
+.result-total { font-size: 22px; color: #9CB0D0; margin-bottom: 22px; }
+.result-comment { font-size: 24px; font-weight: 700; margin-bottom: 32px; color: #F8F6EF; }
+
+@media (max-width: 480px) {
+  .htitle { font-size: 16px; }
+  .sentence { font-size: 17px; }
+  .card3d { min-height: 520px; }
+}
+</style>
+</head>
+<body>
+<div id="pbar"><div id="pfill"></div></div>
+<div id="hdr">
+  <div class="hl"><span class="badge">第10回</span><span class="htitle">英熟語フラッシュカード</span></div>
+  <div class="scbox">
+    <span><span class="sc-ok" id="sc-ok">0</span><span class="sc-lbl"> 正解</span></span>
+    <span><span class="sc-ng" id="sc-ng">0</span><span class="sc-lbl"> 不正解</span></span>
+    <span class="sc-pos" id="sc-pos">-</span>
+  </div>
+</div>
+<div id="main"></div>
+
+<audio id="clip" preload="none"></audio>
+
+<script>
+// ===================== データ (20問) =====================
+const TIME_LIMIT = 20;
+
+const ITEMS = [
+  {id:"10-1.mp3-1", file:"10-1.mp3", idiom:"seeing the sights", sent:"I'm really looking forward to seeing the sights of your country on my trip next month.", meaning:"観光をする、名所を見物する", trans:"来月の旅行であなたの国を観光するのをとても楽しみにしています。", note:"sightsは複数形で使う。seeing the sightsのように動名詞で使われることが多い。", wrong:["seeing the sight","seeing the site","seeing a sights"], start:"00.00.0", end:"00.04.5", dictBefore:"I'm really looking ", dictBlank:"forward to seeing the sights of your", dictAfter:" country on my trip next month."},
+  {id:"10-1.mp3-3", file:"10-1.mp3", idiom:"follow suit", sent:"John's company has introduced a new product, but rival firms are expected to follow suit soon.", meaning:"前例に倣う、右に倣う", trans:"ジョンの会社は新製品を発表したが、ライバル企業もすぐに追随すると予想されている。", note:"トランプのスート（同じ組）に由来する表現で、「同じ行動を取る」という意味。", wrong:["follow suits","follow the suit","follow a suit"], start:"00.10.6", end:"00.16.6", dictBefore:"John's company has introduced a new product, but rival firms are ", dictBlank:"expected to follow suit soon.", dictAfter:""},
+  {id:"10-1.mp3-6", file:"10-1.mp3", idiom:"get the better", sent:"No one can get the better of her in an argument.", meaning:"〜を打ち負かす", trans:"議論で彼女に勝てる人はいない。", note:"get the better of で「〜に勝る、打ち負かす」。betterの前にtheが必要。", wrong:["get the best","get better","get the most"], start:"00.27.3", end:"00.30.9", dictBefore:"No ", dictBlank:"one can get the better of her", dictAfter:" in an argument."},
+  {id:"10-1.mp3-7", file:"10-1.mp3", idiom:"get even with", sent:"Bob wants to get even with Al for bullying him.", meaning:"〜に仕返しをする", trans:"ボブは自分をいじめたアルに仕返しをしたいと思っている。", note:"get even with は「仕返しをする、借りを返す」という口語表現。", wrong:["get even to","get even for","get even on"], start:"00.30.9", end:"00.34.8", dictBefore:"Bob ", dictBlank:"wants to get even with Al for", dictAfter:" bullying him."},
+  {id:"10-1.mp3-8", file:"10-1.mp3", idiom:"keep our emotions in check", sent:"The traditional way to learn to keep our emotions in check is to sit and meditate.", meaning:"感情を抑制する", trans:"感情を抑制することを学ぶ伝統的な方法は、座って瞑想することだ。", note:"keep... in check で「〜を抑制する、制御する」。checkは「阻止」の意味の名詞。", wrong:["keep our emotions on check","keep our emotions in checks","keep our emotion in check"], start:"00.34.8", end:"00.40.4", dictBefore:"The traditional way to ", dictBlank:"learn to keep our emotions in check", dictAfter:" is to sit and meditate."},
+  {id:"10-1.mp3-12", file:"10-1.mp3", idiom:"dared", sent:"I'm glad my mother never knew how high I dared to climb.", meaning:"あえて〜した、思い切って〜した", trans:"私がどれほど高いところまで思い切って登ったか、母が知らずにいてくれて良かった。", note:"dare to do で「思い切って〜する」。疑問文・否定文ではdare doの形（toなし）になることもある。", wrong:["dare","daring","dares"], start:"00.56.6", end:"01.00.9", dictBefore:"I'm glad my mother never knew how ", dictBlank:"high I dared to climb.", dictAfter:""},
+  {id:"10-1.mp3-14", file:"10-1.mp3", idiom:"ascribed", sent:"He ascribed his failure in the examination to bad luck.", meaning:"〜のせいにする（ascribe A to B）", trans:"彼は試験に失敗したことを運が悪かったせいにした。", note:"ascribe A to B で「AをBのせいにする」。attribute A to Bとほぼ同義。", wrong:["ascribed to","ascribed for","ascribed by"], start:"01.07.9", end:"01.12.4", dictBefore:"", dictBlank:"He ascribed his failure", dictAfter:" in the examination to bad luck."},
+  {id:"10-2.mp3-14", file:"10-2.mp3", idiom:"in store for", sent:"She apparently came to the party not expecting such a surprise was in store for her.", meaning:"（将来）待ち受けている", trans:"彼女はまさかそんなサプライズが待ち受けているとは思わずにパーティーに来たようだ。", note:"be in store for で「（将来）〜を待ち受けている」。", wrong:["in store to","in stores for","in store on"], start:"01.03.5", end:"01.08.9", dictBefore:"She apparently came to the party not expecting such a ", dictBlank:"surprise was in store for her.", dictAfter:""},
+  {id:"10-3.mp3-2", file:"10-3.mp3", idiom:"out of hand", sent:"A boy asked a question, but the chairman dismissed it out of hand.", meaning:"即座に、頭から（検討もせず）", trans:"ある少年が質問をしたが、議長はそれを頭から即座に却下した。", note:"get out of hand（手に負えなくなる）とは異なる意味で、dismiss out of hand は「即座に、一考もせず」の意味。", wrong:["out of hands","out of the hand","off hand"], start:"00.02.6", end:"00.07.1", dictBefore:"A boy asked a question, but ", dictBlank:"the chairman dismissed it out of hand.", dictAfter:""},
+  {id:"10-3.mp3-3", file:"10-3.mp3", idiom:"out of the question", sent:"Our pet dog is old, so using stairs is out of the question.", meaning:"問題外で、不可能で", trans:"うちのペットの犬は年をとっているので、階段を使うのは不可能だ。", note:"out of the question は「（提案などが）問題外、不可能」の意味。out of question（疑いなく）と混同しないよう注意。", wrong:["out of question","out of a question","out of the questions"], start:"00.07.1", end:"00.11.9", dictBefore:"Our pet dog is old, so ", dictBlank:"using stairs is out of the question.", dictAfter:""},
+  {id:"10-3.mp3-17", file:"10-3.mp3", idiom:"within walking distance of", sent:"Do you know if there is a post office within walking distance of the station?", meaning:"〜から歩いて行ける距離に", trans:"駅から歩いて行ける距離に郵便局はありますか。", note:"within walking distance of で「〜から徒歩圏内に」。ofの後に基準となる場所が続く。", wrong:["within a walking distance of","within walk distance of","in walking distance of"], start:"01.18.2", end:"01.22.6", dictBefore:"Do you know if there is a ", dictBlank:"post office within walking distance of the", dictAfter:" station?"},
+  {id:"10-4.mp3-3", file:"10-4.mp3", idiom:"part and parcel of", sent:"I think the fact I have to work irregular hours is part and parcel of being a journalist.", meaning:"〜の重要な一部", trans:"不規則な時間に働かなければならないことは、ジャーナリストであることの重要な一部だと思う。", note:"part and parcel of は「〜の切っても切り離せない一部」という決まった表現。", wrong:["part and parcels of","part or parcel of","parts and parcel of"], start:"00.11.4", end:"00.17.3", dictBefore:"I think the fact I have to work irregular ", dictBlank:"hours is part and parcel of being", dictAfter:" a journalist."},
+  {id:"10-4.mp3-6", file:"10-4.mp3", idiom:"as such", sent:"After all, he is the leader of a community, and should be evaluated as such.", meaning:"そういうものとして、それ自体として", trans:"結局のところ、彼は共同体のリーダーであり、そういうものとして評価されるべきだ。", note:"as such は直前で述べた立場・資格を指して「そのようなものとして」の意味。", wrong:["as such as","as it such","for such"], start:"00.27.3", end:"00.33.2", dictBefore:"After all, he is the leader of a ", dictBlank:"community, and should be evaluated as such.", dictAfter:""},
+  {id:"10-4.mp3-7", file:"10-4.mp3", idiom:"first hand", sent:"Touch is the most active sense, through which we experience the outer world first hand.", meaning:"じかに、直接に", trans:"触覚は最も能動的な感覚であり、それを通して私たちは外の世界をじかに経験する。", note:"first hand は副詞的に「直接、じかに」の意味。firsthandと1語で綴ることもある。", wrong:["first hands","at first hand only","in first hand"], start:"00.33.2", end:"00.39.4", dictBefore:"Touch is the most active sense, through which ", dictBlank:"we experience the outer world first hand.", dictAfter:""},
+  {id:"10-4.mp3-10", file:"10-4.mp3", idiom:"at will", sent:"During the day, the children were allowed to run around in the park at will.", meaning:"意のままに、自由に", trans:"日中、子どもたちは公園を自由に走り回ることを許されていた。", note:"at will は「思いのままに、自由に」の意味。冠詞は付けない。", wrong:["at wills","at a will","by will"], start:"00.48.4", end:"00.53.1", dictBefore:"During the day, the children were allowed to ", dictBlank:"run around in the park at will.", dictAfter:""},
+  {id:"10-4.mp3-14", file:"10-4.mp3", idiom:"for a change", sent:"I've become a bit tired of this game. How about trying something new for a change?", meaning:"気分転換に、いつもと違って", trans:"このゲームに少し飽きてきた。気分転換に何か新しいことを試してみるのはどうだろう？", note:"for a change は「（いつもと違って）気分転換に」という決まった表現。", wrong:["for the change","for a changes","for change a"], start:"01.10.8", end:"01.16.5", dictBefore:"I've become a bit tired of this game. How ", dictBlank:"about trying something new for a change?", dictAfter:""},
+  {id:"10-4.mp3-20", file:"10-4.mp3", idiom:"in person", sent:"In that study, thousands of people were polled either in person or online.", meaning:"直接会って、本人が", trans:"その調査では、何千人もの人が対面またはオンラインで意見を求められた。", note:"in person は「（電話や代理でなく）本人が直接」の意味。", wrong:["in persons","by person","in a person"], start:"01.41.8", end:"01.47.1", dictBefore:"In that study, thousands of people were ", dictBlank:"polled either in person or online.", dictAfter:""},
+  {id:"10-5.mp3-3", file:"10-5.mp3", idiom:"on second thought", sent:"At first I thought I liked the plan, but on second thought, I decided to oppose it.", meaning:"考え直してみると", trans:"最初はその計画が気に入ったと思ったが、考え直してみて反対することにした。", note:"on second thought は「考え直してみると」という決まった表現（イギリス英語ではon second thoughtsと複数形になることが多い）。", wrong:["on the second thought","on second thinking","at second thought"], start:"00.11.4", end:"00.17.7", dictBefore:"At first I thought I liked the ", dictBlank:"plan, but on second thought, I decided", dictAfter:" to oppose it."},
+  {id:"10-5.mp3-5", file:"10-5.mp3", idiom:"on the spot", sent:"He liked the painting on display the moment he saw it, and decided to buy it on the spot.", meaning:"その場で、即座に", trans:"彼はその絵を見た瞬間気に入り、その場で買うことに決めた。", note:"on the spot は「その場ですぐに」の意味。put someone on the spot（人を困らせる）という別の意味もある。", wrong:["on a spot","on the spots","in the spot"], start:"00.22.8", end:"00.28.3", dictBefore:"He liked the painting on display the moment he saw it, and ", dictBlank:"decided to buy it on the spot.", dictAfter:""},
+  {id:"10-5.mp3-13", file:"10-5.mp3", idiom:"such as it is", sent:"You are welcome to use my dictionary, such as it is.", meaning:"大したものではないが、こんなものだが", trans:"たいしたものではありませんが、私の辞書をどうぞ自由にお使いください。", note:"such as it is は謙遜して「大したものではないが」と付け加える決まり文句。", wrong:["such as it was","so as it is","such as is it"], start:"01.05.3", end:"01.09.5", dictBefore:"You are welcome to ", dictBlank:"use my dictionary, such as it is.", dictAfter:""},
+];
+
+const ERROR_ITEMS = {
+  "10-1.mp3-1": {parts:[["I'm really looking forward to","A"]," ",["seeing the sight","B"]," ",["of your country on","C"]," ",["my trip next month.","D"]], wrong:"B", fix:"seeing the sights"},
+  "10-1.mp3-3": {parts:[["John's company has introduced a new product,","A"]," ",["but rival firms are expected to","B"]," ",["follow suits","C"]," ",["soon.","D"]], wrong:"C", fix:"follow suit"},
+  "10-1.mp3-6": {parts:[["No one can","A"]," ",["get the best","B"]," ",["of her in","C"]," ",["an argument.","D"]], wrong:"B", fix:"get the better"},
+  "10-1.mp3-7": {parts:[["Bob wants to","A"]," ",["get even to","B"]," ",["Al for","C"]," ",["bullying him.","D"]], wrong:"B", fix:"get even with"},
+  "10-1.mp3-8": {parts:[["The traditional way","A"]," ",["to learn to","B"]," ",["keep our emotions on check","C"]," ",["is to sit and meditate.","D"]], wrong:"C", fix:"keep our emotions in check"},
+  "10-1.mp3-12": {parts:[["I'm glad my mother never","A"]," ",["knew how high I","B"]," ",["dare","C"]," ",["to climb.","D"]], wrong:"C", fix:"dared"},
+  "10-1.mp3-14": {parts:[["He","A"]," ",["ascribed to","B"]," ",["his failure in the","C"]," ",["examination to bad luck.","D"]], wrong:"B", fix:"ascribed"},
+  "10-2.mp3-14": {parts:[["She apparently came to the party","A"]," ",["not expecting such a surprise was","B"]," ",["in store to","C"]," ",["her.","D"]], wrong:"C", fix:"in store for"},
+  "10-3.mp3-2": {parts:[["A boy asked a","A"]," ",["question, but the","B"]," ",["chairman dismissed it","C"]," ",["out of hands.","D"]], wrong:"D", fix:"out of hand"},
+  "10-3.mp3-3": {parts:[["Our pet dog","A"]," ",["is old, so","B"]," ",["using stairs is","C"]," ",["out of question.","D"]], wrong:"D", fix:"out of the question"},
+  "10-3.mp3-17": {parts:[["Do you know if there","A"]," ",["is a post office","B"]," ",["within a walking distance of","C"]," ",["the station?","D"]], wrong:"C", fix:"within walking distance of"},
+  "10-4.mp3-3": {parts:[["I think the fact I have","A"]," ",["to work irregular hours is","B"]," ",["part and parcels of","C"]," ",["being a journalist.","D"]], wrong:"C", fix:"part and parcel of"},
+  "10-4.mp3-6": {parts:[["After all, he is the","A"]," ",["leader of a community,","B"]," ",["and should be evaluated","C"]," ",["as such as.","D"]], wrong:"D", fix:"as such"},
+  "10-4.mp3-7": {parts:[["Touch is the most active","A"]," ",["sense, through which we","B"]," ",["experience the outer world","C"]," ",["first hands.","D"]], wrong:"D", fix:"first hand"},
+  "10-4.mp3-10": {parts:[["During the day, the children","A"]," ",["were allowed to run","B"]," ",["around in the park","C"]," ",["at wills.","D"]], wrong:"D", fix:"at will"},
+  "10-4.mp3-14": {parts:[["I've become a bit tired","A"]," ",["of this game. How","B"]," ",["about trying something new","C"]," ",["for the change?","D"]], wrong:"D", fix:"for a change"},
+  "10-4.mp3-20": {parts:[["In that study, thousands of","A"]," ",["people were polled either","B"]," ",["in persons","C"]," ",["or online.","D"]], wrong:"C", fix:"in person"},
+  "10-5.mp3-3": {parts:[["At first I thought I","A"]," ",["liked the plan, but","B"]," ",["on the second thought,","C"]," ",["I decided to oppose it.","D"]], wrong:"C", fix:"on second thought"},
+  "10-5.mp3-5": {parts:[["He liked the painting on display","A"]," ",["the moment he saw it,","B"]," ",["and decided to buy it","C"]," ",["on a spot.","D"]], wrong:"D", fix:"on the spot"},
+  "10-5.mp3-13": {parts:[["You are welcome","A"]," ",["to use","B"]," ",["my dictionary,","C"]," ",["such as it was.","D"]], wrong:"D", fix:"such as it is"},
+};
+
+// ===================== ユーティリティ =====================
+function $(s){ return document.querySelector(s); }
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!==undefined) e.textContent=text; return e; }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function norm(s){ return s.toLowerCase().replace(/[.,!?"'\u201c\u201d]/g,'').replace(/\s+/g,' ').trim(); }
+function parseTime(t){ const p=t.split('.'); return (parseInt(p[0],10)*60)+parseInt(p[1],10)+(parseInt(p[2],10)/10); }
+function makeBlank(sent, idiom){
+  const idx = sent.indexOf(idiom);
+  if(idx<0) return {before:sent, after:""};
+  return {before: sent.slice(0,idx), after: sent.slice(idx+idiom.length)};
+}
+
+const audioEl = $('#clip');
+let stopAt = null;
+let currentAudioFile = null;
+audioEl.addEventListener('timeupdate', ()=>{
+  if(stopAt!==null && audioEl.currentTime >= stopAt){ audioEl.pause(); stopAt=null; }
+});
+function playClip(file, startStr, endStr, btn){
+  const s = parseTime(startStr), e = parseTime(endStr);
+  const doPlay = ()=>{
+    audioEl.currentTime = s; stopAt = e;
+    const p = audioEl.play();
+    if(p && p.catch) p.catch(()=>{ if(btn){ btn.textContent = '\u26a0\ufe0f ' + file + ' \u3092\u540c\u3058\u30d5\u30a9\u30eb\u30c0\u306b\u7f6e\u3044\u3066\u304f\u3060\u3055\u3044'; } });
+  };
+  if(currentAudioFile !== file){
+    currentAudioFile = file;
+    audioEl.src = file;
+    audioEl.addEventListener('loadedmetadata', doPlay, {once:true});
+    audioEl.load();
+  } else {
+    doPlay();
+  }
+}
+
+// ===================== 状態 =====================
+const TYPES = ['A','B','C','D'];
+const TYPE_LABEL = {A:'4\u629e', B:'\u9069\u8a9e\u88dc\u5145\uff08\u8a18\u8ff0\uff09', C:'\u30c7\u30a3\u30af\u30c6\u30fc\u30b7\u30e7\u30f3', D:'\u8aa4\u6587\u8a02\u6b63'};
+const TYPE_RING_COLOR = {A:'#4FA8FF', B:'#FF9A2E', C:'#F5E64C', D:'#FFD400'};
+const TIMED_TYPES = {A:true,B:true,C:true,D:true}; // ディクテーション以外＋今回はディクテーションも音声込みでタイマーなしにする
+delete TIMED_TYPES.C;
+
+let session = [];
+let current = 0;
+let correct = 0, wrong = 0;
+let TOTAL = 0;
+let timerId = null;
+let timeLeft = TIME_LIMIT;
+let isFlipped = false;
+let lastResult = null; // {isCorrect, answerText}
+
+function buildSession(){
+  session = shuffle(ITEMS).map(item=>{
+    const type = TYPES[Math.floor(Math.random()*TYPES.length)];
+    return { type, item, err: ERROR_ITEMS[item.id] };
+  });
+  TOTAL = session.length;
+  current = 0; correct = 0; wrong = 0;
+}
+function startSession(){ buildSession(); renderCard(); }
+
+function updateHeader(){
+  $('#sc-ok').textContent = correct;
+  $('#sc-ng').textContent = wrong;
+  $('#sc-pos').textContent = (current+1) + ' / ' + TOTAL + ' \u554f';
+  $('#pfill').style.width = Math.round((current)/TOTAL*100) + '%';
+}
+
+// ===================== タイマー =====================
+const RING_R = 29, RING_C = 2*Math.PI*RING_R;
+function buildTimerUI(color){
+  const box = el('div');
+  const wrap = el('div','timer-ring-wrap'); wrap.id='timer-wrap';
+  wrap.innerHTML = '<svg viewBox="0 0 64 64">'+
+    '<circle class="timer-ring-bg" cx="32" cy="32" r="'+RING_R+'"></circle>'+
+    '<circle class="timer-ring-fg" id="timer-fg" cx="32" cy="32" r="'+RING_R+'" stroke="'+color+'" '+
+    'stroke-dasharray="'+RING_C+'" stroke-dashoffset="0"></circle></svg>'+
+    '<div class="timer-num" id="timer-num">'+TIME_LIMIT+'</div>';
+  box.appendChild(wrap);
+  box.appendChild(el('div','timer-caption','\u5236\u9650\u6642\u9593'));
+  return box;
+}
+function startTimer(onExpire){
+  stopTimer();
+  timeLeft = TIME_LIMIT;
+  const fg = $('#timer-fg'), num = $('#timer-num'), wrapEl = $('#timer-wrap');
+  if(!fg) return;
+  fg.style.strokeDashoffset = '0';
+  num.textContent = timeLeft;
+  timerId = setInterval(()=>{
+    timeLeft--;
+    if(num) num.textContent = Math.max(timeLeft,0);
+    if(fg) fg.style.strokeDashoffset = String(RING_C*(1-timeLeft/TIME_LIMIT));
+    if(wrapEl) wrapEl.classList.toggle('low', timeLeft<=5);
+    if(timeLeft<=0){ stopTimer(); onExpire(); }
+  },1000);
+}
+function stopTimer(){ if(timerId){ clearInterval(timerId); timerId=null; } }
+
+// ===================== カード描画（表裏） =====================
+function renderCard(){
+  isFlipped = false;
+  lastResult = null;
+  updateHeader();
+  const main = $('#main');
+  main.innerHTML = '';
+  const scene = el('div','scene');
+  const card3d = el('div','card3d'); card3d.id='card3d';
+  const front = el('div','face face-front'); front.id='faceFront';
+  const back = el('div','face face-back'); back.id='faceBack';
+  card3d.appendChild(front); card3d.appendChild(back);
+  scene.appendChild(card3d);
+  main.appendChild(scene);
+
+  const q = session[current];
+  buildFront(front, q);
+  buildBack(back, q); // built ahead of time, revealed after flip
+}
+
+function buildFront(front, q){
+  const type = q.type;
+  const meta = el('div','qmeta');
+  const left = el('div');
+  left.appendChild(el('div','qnum', 'Q' + (current+1) + ' / ' + TOTAL));
+  left.appendChild(el('span','qtype-badge type-'+type, TYPE_LABEL[type]));
+  meta.appendChild(left);
+  if(TIMED_TYPES[type]) meta.appendChild(buildTimerUI(TYPE_RING_COLOR[type]));
+  front.appendChild(meta);
+
+  if(type === 'A') renderA(front, q.item);
+  else if(type === 'B') renderB(front, q.item);
+  else if(type === 'C') renderC(front, q.item);
+  else if(type === 'D') renderD(front, q.item, q.err);
+
+  if(TIMED_TYPES[type]){
+    startTimer(()=>{
+      finishAndFlip(false, autoAnswerTextFor(type, q));
+    });
+  }
+}
+
+function autoAnswerTextFor(type, q){
+  if(type==='D') return '(' + q.err.wrong + ') \u2192 ' + q.err.fix;
+  return q.item.idiom;
+}
+
+// ---- A: 4択 ----
+function renderA(front, q){
+  const bl = makeBlank(q.sent, q.idiom);
+  const sentWrap = el('div','sentence');
+  sentWrap.appendChild(document.createTextNode(bl.before));
+  sentWrap.appendChild(el('span','blank-input','\uff08\u3000?\u3000\uff09'));
+  sentWrap.appendChild(document.createTextNode(bl.after));
+  front.appendChild(sentWrap);
+
+  const hint = el('div','hintbox');
+  hint.innerHTML = '<b>\u65e5\u672c\u8a9e\u306e\u610f\u5473</b>\uff1a' + q.meaning;
+  front.appendChild(hint);
+
+  const opts = shuffle([q.idiom, ...q.wrong]);
+  const choicesWrap = el('div','choices');
+  opts.forEach(opt=>{
+    const b = el('button','choice-btn', opt);
+    b.onclick = ()=>{
+      stopTimer();
+      finishAndFlip(opt === q.idiom, q.idiom);
+    };
+    choicesWrap.appendChild(b);
+  });
+  front.appendChild(choicesWrap);
+}
+
+// ---- B: 適語補充（記述式・日本語ヒントあり） ----
+function renderB(front, q){
+  const hint = el('div','hintbox');
+  hint.innerHTML = '<b>\u65e5\u672c\u8a9e\u306e\u610f\u5473</b>\uff1a' + q.meaning + '<br>\u2192\u65e5\u672c\u8a9e\u306e\u610f\u5473\u3092\u8868\u3059\u3088\u3046\u306b\u3001\u7a7a\u6240\u306b\u82f1\u8a9e\u3092\u5165\u308c\u306a\u3055\u3044\u3002';
+  front.appendChild(hint);
+
+  const bl = makeBlank(q.sent, q.idiom);
+  const sentWrap = el('div','sentence');
+  sentWrap.appendChild(document.createTextNode(bl.before));
+  const inp = document.createElement('input');
+  inp.className='blank-fill'; inp.autocomplete='off'; inp.placeholder='...';
+  inp.style.width = Math.max(110,(q.idiom.length*11))+'px';
+  sentWrap.appendChild(inp);
+  sentWrap.appendChild(document.createTextNode(bl.after));
+  front.appendChild(sentWrap);
+
+  front.appendChild(el('div','spacer'));
+  const actions = el('div','actions');
+  const submitBtn = el('button','btn btn-submit','\u89e3\u7b54\u3059\u308b');
+  submitBtn.onclick = ()=>{
+    stopTimer();
+    const ok = norm(inp.value) === norm(q.idiom);
+    finishAndFlip(ok, q.idiom);
+  };
+  actions.appendChild(submitBtn);
+  front.appendChild(actions);
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitBtn.click(); } });
+}
+
+// ---- C: ディクテーション（一部書き取り・タイマーなし） ----
+function renderC(front, q){
+  const btn = el('button','audio-btn','\u25b6\ufe0f \u97f3\u58f0\u3092\u518d\u751f');
+  btn.onclick = ()=>{ playClip(q.file, q.start, q.end, btn); };
+  front.appendChild(btn);
+
+  const wcount = q.dictBlank.split(' ').length;
+  const hint = el('div','hintbox','\u97f3\u58f0\u3092\u805e\u3044\u3066\u3001\u4e0b\u7dda\u90e8\u5206\uff08' + wcount + '\u8a9e\uff09\u3092\u66f8\u304d\u53d6\u3063\u3066\u304f\u3060\u3055\u3044\u3002');
+  front.appendChild(hint);
+
+  const sentWrap = el('div','sentence');
+  sentWrap.appendChild(document.createTextNode(q.dictBefore));
+  sentWrap.appendChild(el('span','blank-input','\u2015\u2015\u2015\u2015\u2015\u2015'));
+  sentWrap.appendChild(document.createTextNode(q.dictAfter));
+  front.appendChild(sentWrap);
+
+  const ta = document.createElement('textarea');
+  ta.className='dict-textarea'; ta.placeholder = '\u542c\u3053\u3048\u305f\u90e8\u5206\uff08'+wcount+'\u8a9e\uff09\u3092\u5165\u529b...';
+  front.appendChild(ta);
+
+  front.appendChild(el('div','spacer'));
+  const actions = el('div','actions');
+  const submitBtn = el('button','btn btn-submit','\u89e3\u7b54\u3059\u308b');
+  submitBtn.onclick = ()=>{
+    const ok = norm(ta.value) === norm(q.dictBlank);
+    finishAndFlip(ok, q.dictBlank);
+  };
+  actions.appendChild(submitBtn);
+  front.appendChild(actions);
+}
+
+// ---- D: 誤文訂正 ----
+function renderD(front, q, err){
+  const hint = el('div','hintbox','\u4e0b\u7dda\u90e8(A)\uff5e(D)\u306e\u4e2d\u304b\u3089\u8aa4\u308a\u30921\u3064\u9078\u3073\u3001\u6b63\u3057\u3044\u5f62\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002');
+  front.appendChild(hint);
+
+  const sentWrap = el('div','sentence');
+  let selectedTag = null;
+  const spans = {};
+  err.parts.forEach(part=>{
+    if(Array.isArray(part)){
+      const [text, tag] = part;
+      const span = document.createElement('span');
+      span.className = 'eu';
+      const tagEl = document.createElement('span'); tagEl.className='eu-tag'; tagEl.textContent='('+tag+')';
+      span.appendChild(tagEl);
+      span.appendChild(document.createTextNode(text));
+      span.onclick = ()=>{
+        Object.values(spans).forEach(s=>s.classList.remove('selected'));
+        span.classList.add('selected');
+        selectedTag = tag;
+      };
+      spans[tag] = span;
+      sentWrap.appendChild(span);
+    } else {
+      sentWrap.appendChild(document.createTextNode(part));
+    }
+  });
+  front.appendChild(sentWrap);
+
+  const fixRow = el('div','err-fix-row');
+  fixRow.appendChild(el('span','', '\u6b63\u3057\u3044\u5f62\uff1a'));
+  const fixInput = document.createElement('input');
+  fixInput.autocomplete='off'; fixInput.placeholder = q.idiom;
+  fixRow.appendChild(fixInput);
+  front.appendChild(fixRow);
+
+  front.appendChild(el('div','spacer'));
+  const actions = el('div','actions');
+  const submitBtn = el('button','btn btn-submit','\u89e3\u7b54\u3059\u308b');
+  submitBtn.onclick = ()=>{
+    if(!selectedTag){ alert('\u8aa4\u308a\u306e\u7b87\u6240\u3092\u30af\u30ea\u30c3\u30af\u3057\u3066\u9078\u3093\u3067\u304f\u3060\u3055\u3044\u3002'); return; }
+    stopTimer();
+    const ok = (selectedTag === err.wrong) && (norm(fixInput.value) === norm(err.fix));
+    finishAndFlip(ok, '(' + err.wrong + ') \u2192 ' + err.fix);
+  };
+  actions.appendChild(submitBtn);
+  front.appendChild(actions);
+  fixInput.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); submitBtn.click(); } });
+}
+
+// ===================== 裏面 =====================
+function buildBack(back, q){
+  const item = q.item;
+  const tag = el('div','result-tag ok'); tag.id='resultTag'; tag.textContent='\u2014';
+  back.appendChild(tag);
+
+  back.appendChild(el('div','answer-line', item.idiom));
+  back.appendChild(el('div','full-sentence', item.sent));
+
+  const btn = el('button','audio-btn','\u25b6\ufe0f \u5168\u6587\u3092\u518d\u751f');
+  btn.onclick = ()=>{ playClip(item.file, item.start, item.end, btn); };
+  back.appendChild(btn);
+
+  const ex = el('div','explain-box');
+  ex.innerHTML = '<b>\u610f\u5473</b>\uff1a' + item.meaning + '<br><b>\u8a33</b>\uff1a' + item.trans + '<br><b>\u6ce8\u610f\u70b9</b>\uff1a' + item.note;
+  back.appendChild(ex);
+
+  back.appendChild(el('div','spacer'));
+  const actions = el('div','actions');
+  const flipBackBtn = el('button','btn btn-flip','\u8868\u306b\u623b\u3059');
+  flipBackBtn.onclick = ()=>{
+    const card3d = $('#card3d');
+    if(card3d) card3d.classList.remove('flipped');
+  };
+  const nextBtn = el('button','btn btn-next', current === TOTAL-1 ? '\u7d50\u679c\u3092\u898b\u308b' : '\u6b21\u306e\u30ab\u30fc\u30c9\u3078');
+  nextBtn.onclick = nextCard;
+  actions.appendChild(flipBackBtn);
+  actions.appendChild(nextBtn);
+  back.appendChild(actions);
+}
+
+function finishAndFlip(isCorrect, answerText){
+  if(isCorrect) correct++; else wrong++;
+  const tag = $('#resultTag');
+  if(tag){
+    tag.className = 'result-tag ' + (isCorrect ? 'ok' : 'ng');
+    tag.textContent = isCorrect ? '\u25ef \u6b63\u89e3' : '\u2715 \u4e0d\u6b63\u89e3';
+  }
+  updateHeader();
+  const card3d = $('#card3d');
+  if(card3d) card3d.classList.add('flipped');
+}
+
+function nextCard(){
+  if(current < TOTAL-1){ current++; renderCard(); }
+  else { showResult(); }
+}
+
+function commentFor(score, total){
+  const pct = score/total;
+  if(score === total) return 'Perfect! \u5168\u554f\u6b63\u89e3\u3067\u3059\uff01';
+  if(pct >= 0.9) return 'Excellent! \u3068\u3066\u3082\u826f\u304f\u3067\u304d\u307e\u3057\u305f\uff01';
+  if(pct >= 0.75) return 'Very Good! \u9806\u8abf\u306b\u8eab\u306b\u3064\u3044\u3066\u3044\u307e\u3059\uff01';
+  if(pct >= 0.6) return 'Good! \u3082\u3046\u5c11\u3057\u3067\u5b8c\u74a7\u3067\u3059\uff01';
+  if(pct >= 0.4) return 'Keep Practicing! \u7e70\u308a\u8fd4\u3057\u5fa9\u7fd2\u3057\u307e\u3057\u3087\u3046\uff01';
+  return "Let's Review! \u3082\u3046\u4e00\u5ea6\u898b\u76f4\u3057\u307e\u3057\u3087\u3046\uff01";
+}
+
+function showResult(){
+  stopTimer();
+  $('#pfill').style.width = '100%';
+  $('#sc-pos').textContent = '\u5b8c\u4e86';
+  const main = $('#main');
+  main.innerHTML = '';
+  const wrap = el('div','result-wrap');
+  wrap.appendChild(el('div','result-score', correct + ' / ' + TOTAL));
+  wrap.appendChild(el('div','result-total','\u6b63\u89e3\u6570'));
+  wrap.appendChild(el('div','result-comment', commentFor(correct, TOTAL)));
+  const retryBtn = el('button','btn btn-submit','\u3082\u3046\u4e00\u5ea6\u6311\u6226\u3059\u308b\uff08\u554f\u984c\u306f\u5165\u308c\u66ff\u308f\u308a\u307e\u3059\uff09');
+  retryBtn.onclick = startSession;
+  wrap.appendChild(retryBtn);
+  main.appendChild(wrap);
+}
+
+// ===================== 初期化 =====================
+startSession();
+</script>
+</body>
+</html>
